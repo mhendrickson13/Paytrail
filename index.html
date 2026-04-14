@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PriceTrail — Sniffs out every price drop</title>
+  <meta name="description" content="A privacy-first price-history tracker for Amazon, Walmart, eBay, and Best Buy. No accounts. Nothing leaves your browser.">
+  <style>
+    :root {
+      --cream: #FFF8EC;
+      --cream-2: #FBEFD6;
+      --ink: #0A0F2C;
+      --ink-70: rgba(10,15,44,0.7);
+      --ink-20: rgba(10,15,44,0.18);
+      --coral: #FF5E5B;
+      --coral-light: #FFE8E7;
+      --mint: #52D1A4;
+      --mint-light: #D4F4E4;
+      --marigold: #FFC145;
+      --marigold-light: #FFEBB8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font: 16px/1.6 "Inter Tight", "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--cream);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+    .stripe {
+      height: 8px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--coral) 0, var(--coral) 24px,
+        var(--marigold) 24px, var(--marigold) 48px,
+        var(--mint) 48px, var(--mint) 72px,
+        var(--cream-2) 72px, var(--cream-2) 96px
+      );
+    }
+    nav {
+      background: var(--ink);
+      color: var(--cream);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .logo {
+      font-weight: 800;
+      font-size: 18px;
+      letter-spacing: -0.02em;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .logo em { color: var(--coral); font-style: normal; }
+    .logo svg { width: 32px; height: 32px; }
+    nav a {
+      color: var(--cream);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 14px;
+      margin-left: 18px;
+      opacity: 0.85;
+    }
+    nav a:hover { opacity: 1; border-bottom: 2px solid var(--coral); }
+
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+    /* HERO */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+    .hero .mascot {
+      width: 140px; height: 140px;
+      margin: 0 auto 24px;
+      animation: bob 3.2s ease-in-out infinite;
+    }
+    @keyframes bob {
+      0%, 100% { transform: translateY(0) rotate(-3deg); }
+      50% { transform: translateY(-6px) rotate(3deg); }
+    }
+    .hero h1 {
+      font-size: clamp(40px, 6vw, 72px);
+      font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1.05;
+      margin-bottom: 18px;
+    }
+    .hero h1 em { color: var(--coral); font-style: normal; }
+    .hero p {
+      font-size: clamp(16px, 2vw, 22px);
+      color: var(--ink-70);
+      max-width: 640px;
+      margin: 0 auto 32px;
+      line-height: 1.5;
+    }
+    .cta-row { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+    .btn {
+      display: inline-block;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 16px;
+      text-decoration: none;
+      border: 2.5px solid var(--ink);
+      transition: transform 120ms, box-shadow 120ms;
+      cursor: pointer;
+    }
+    .btn-primary {
+      background: var(--ink);
+      color: var(--cream);
+      box-shadow: 5px 5px 0 var(--coral);
+    }
+    .btn-primary:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--coral); }
+    .btn-secondary {
+      background: var(--cream);
+      color: var(--ink);
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .btn-secondary:hover { transform: translate(-2px, -2px); box-shadow: 7px 7px 0 var(--ink); }
+
+    /* FEATURES */
+    .features {
+      padding: 80px 0;
+      background: #fff;
+      border-top: 3px solid var(--ink);
+      border-bottom: 3px solid var(--ink);
+    }
+    .features h2 {
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-align: center;
+      margin-bottom: 16px;
+    }
+    .features .sub {
+      text-align: center;
+      color: var(--ink-70);
+      font-size: 18px;
+      max-width: 600px;
+      margin: 0 auto 50px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+    }
+    .card {
+      padding: 28px;
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      box-shadow: 6px 6px 0 var(--ink);
+      transition: transform 120ms, box-shadow 120ms;
+    }
+    .card:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--coral); }
+    .card.coral { background: var(--coral-light); }
+    .card.mint { background: var(--mint-light); }
+    .card.marigold { background: var(--marigold-light); }
+    .card .ico { font-size: 38px; margin-bottom: 12px; line-height: 1; }
+    .card h3 { font-size: 20px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .card p { font-size: 15px; color: var(--ink-70); line-height: 1.55; }
+
+    /* HOW IT WORKS */
+    .steps { padding: 80px 0; }
+    .steps h2 {
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      text-align: center;
+      margin-bottom: 50px;
+    }
+    .step {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      max-width: 700px;
+      margin: 0 auto 30px;
+      padding: 24px;
+      background: #fff;
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      box-shadow: 5px 5px 0 var(--ink);
+    }
+    .step-num {
+      width: 48px; height: 48px;
+      flex-shrink: 0;
+      background: var(--coral);
+      color: var(--cream);
+      border: 2.5px solid var(--ink);
+      border-radius: 12px;
+      display: flex;
+      align-items: center; justify-content: center;
+      font-weight: 800;
+      font-size: 22px;
+      box-shadow: 3px 3px 0 var(--ink);
+    }
+    .step h3 { font-size: 18px; font-weight: 800; margin-bottom: 4px; }
+    .step p { color: var(--ink-70); font-size: 15px; }
+
+    /* PRIVACY */
+    .privacy {
+      padding: 80px 0;
+      background: var(--marigold-light);
+      border-top: 3px solid var(--ink);
+      border-bottom: 3px solid var(--ink);
+    }
+    .privacy h2 {
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      margin-bottom: 8px;
+    }
+    .privacy .updated {
+      color: var(--ink-70);
+      font-size: 14px;
+      margin-bottom: 32px;
+    }
+    .privacy-content {
+      background: #fff;
+      border: 2.5px solid var(--ink);
+      border-radius: 14px;
+      padding: 36px;
+      box-shadow: 6px 6px 0 var(--ink);
+    }
+    .privacy-content h3 { font-size: 22px; font-weight: 800; margin: 28px 0 12px; letter-spacing: -0.01em; }
+    .privacy-content h3:first-child { margin-top: 0; }
+    .privacy-content p { font-size: 15.5px; line-height: 1.65; margin-bottom: 12px; color: var(--ink); }
+    .privacy-content ul { margin: 12px 0 16px 24px; }
+    .privacy-content li { font-size: 15px; line-height: 1.6; margin-bottom: 6px; }
+    .privacy-content code {
+      background: var(--cream-2);
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-family: ui-monospace, "SF Mono", Menlo, monospace;
+      font-size: 13px;
+      border: 1.5px solid var(--ink-20);
+    }
+    .privacy-content .red { color: var(--coral); font-weight: 700; }
+    .privacy-content .green { color: #047857; font-weight: 700; }
+
+    /* FOOTER */
+    footer {
+      padding: 40px 24px;
+      background: var(--ink);
+      color: var(--cream);
+      text-align: center;
+      font-size: 13px;
+    }
+    footer a { color: var(--coral); text-decoration: none; font-weight: 600; }
+    footer a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="stripe"></div>
+
+  <nav>
+    <a href="#" class="logo" style="color: var(--cream); text-decoration: none;">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="48" height="48" rx="14" fill="#0A0F2C"/>
+        <rect x="4" y="4" width="48" height="48" rx="14" fill="#FF5E5B" stroke="#FFF8EC" stroke-width="2"/>
+        <ellipse cx="20" cy="26" rx="3.5" ry="3.5" fill="#0A0F2C"/>
+        <ellipse cx="36" cy="26" rx="3.5" ry="3.5" fill="#0A0F2C"/>
+        <path d="M 19 36 Q 28 42, 37 36" stroke="#0A0F2C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+      </svg>
+      Price<em>Trail</em>
+    </a>
+    <div>
+      <a href="#features">Features</a>
+      <a href="#how">How it works</a>
+      <a href="#privacy">Privacy</a>
+    </div>
+  </nav>
+
+  <section class="hero container">
+    <svg class="mascot" viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <rect x="9" y="9" width="48" height="48" rx="14" fill="#0A0F2C"/>
+      <rect x="4" y="4" width="48" height="48" rx="14" fill="#FF5E5B" stroke="#0A0F2C" stroke-width="2.5"/>
+      <rect x="7" y="7" width="34" height="14" rx="8" fill="#FFA080" opacity="0.5"/>
+      <ellipse cx="20" cy="26" rx="3.5" ry="3.5" fill="#0A0F2C"/>
+      <ellipse cx="36" cy="26" rx="3.5" ry="3.5" fill="#0A0F2C"/>
+      <circle cx="18.5" cy="24.5" r="1.2" fill="#fff"/>
+      <circle cx="34.5" cy="24.5" r="1.2" fill="#fff"/>
+      <ellipse cx="14" cy="34" rx="3" ry="2" fill="#FF8866" opacity="0.6"/>
+      <ellipse cx="42" cy="34" rx="3" ry="2" fill="#FF8866" opacity="0.6"/>
+      <path d="M 20 36 Q 28 44, 36 36" stroke="#0A0F2C" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+    </svg>
+    <h1>Sniff out every <em>price drop.</em></h1>
+    <p>A privacy-first price-history tracker for Amazon, Walmart, eBay, and Best Buy. No accounts. No tracking. Nothing leaves your browser.</p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="#" id="install-btn">Install for Chrome</a>
+      <a class="btn btn-secondary" href="#how">See how it works</a>
+    </div>
+  </section>
+
+  <section class="features" id="features">
+    <div class="container">
+      <h2>Built for shoppers, not advertisers.</h2>
+      <p class="sub">Three things make PriceTrail different from every other "savings" extension.</p>
+      <div class="grid">
+        <div class="card coral">
+          <div class="ico">🔒</div>
+          <h3>100% private</h3>
+          <p>Your shopping history lives in your browser's local database — nowhere else. No accounts, no servers, no analytics, no telemetry. Ever.</p>
+        </div>
+        <div class="card mint">
+          <div class="ico">📈</div>
+          <h3>Real price history</h3>
+          <p>Sparkline charts, historic lows and highs, and a "lowest you've ever seen it" badge. Spot fake sales the moment you see them.</p>
+        </div>
+        <div class="card marigold">
+          <div class="ico">⚡</div>
+          <h3>Zero friction</h3>
+          <p>No login. No sign-up. No coupons interrupting checkout. Install and shop normally — PriceTrail does its job in the background.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="steps container" id="how">
+    <h2>How it works</h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h3>Install the extension</h3>
+        <p>One click from the Chrome Web Store. No account creation, no email required.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h3>Shop normally</h3>
+        <p>Browse Amazon, Walmart, eBay, or Best Buy like you always do. PriceTrail silently records the prices you see.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h3>Come back later</h3>
+        <p>Revisit a product and PriceTrail shows you exactly how the price has changed — with a chart, the all-time low, and a "best price ever" badge when it's a real deal.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="privacy" id="privacy">
+    <div class="container">
+      <h2>Privacy policy</h2>
+      <div class="updated">Effective and last updated: April 14, 2026</div>
+
+      <div class="privacy-content">
+        <h3>Plain English</h3>
+        <p>PriceTrail does <span class="green">not collect</span>, transmit, sell, share, or otherwise process any of your personal information. Everything happens in your browser. Nothing leaves your computer.</p>
+
+        <h3>What data PriceTrail handles</h3>
+        <p>When you visit a product page on Amazon, Walmart, eBay, or Best Buy, PriceTrail reads three pieces of information from that page:</p>
+        <ul>
+          <li>The product identifier (e.g. an Amazon ASIN)</li>
+          <li>The product title</li>
+          <li>The currently displayed price</li>
+        </ul>
+        <p>This data is stored <strong>exclusively in your browser's local IndexedDB database</strong>. It is not transmitted to PriceTrail's developers, to any third party, to any analytics service, or to any server of any kind.</p>
+
+        <h3>What PriceTrail does NOT do</h3>
+        <ul>
+          <li><span class="red">Does not</span> collect your name, email, address, IP, or any identifying information</li>
+          <li><span class="red">Does not</span> send your browsing history anywhere</li>
+          <li><span class="red">Does not</span> use cookies or tracking pixels</li>
+          <li><span class="red">Does not</span> embed analytics SDKs (Google Analytics, Mixpanel, Amplitude, etc.)</li>
+          <li><span class="red">Does not</span> read or modify pages outside the four supported retailers</li>
+          <li><span class="red">Does not</span> read your saved passwords, autofill data, or browser history</li>
+          <li><span class="red">Does not</span> sell or share data with anyone (because there is no data to share)</li>
+        </ul>
+
+        <h3>Permissions explained</h3>
+        <ul>
+          <li><code>storage</code> — required to save price observations to your browser's local IndexedDB and to remember your settings.</li>
+          <li><code>activeTab</code> — used so the extension popup can read the URL of the tab you're currently viewing.</li>
+          <li>Host permissions for <code>*.amazon.com</code>, <code>*.walmart.com</code>, <code>*.ebay.com</code>, <code>*.bestbuy.com</code> — required so PriceTrail can read product information on those sites only. PriceTrail cannot access any other website.</li>
+        </ul>
+
+        <h3>Affiliate links</h3>
+        <p>When you click a "Compare elsewhere" or "Open product" link from inside PriceTrail, the link includes the developer's affiliate tag for that retailer. The retailer (Amazon, Walmart, eBay, Best Buy) may pay the developer a small commission if you make a qualifying purchase. The retailers' own privacy policies apply to your interactions on their sites. PriceTrail itself does not see, log, or collect any information about your clicks or purchases.</p>
+
+        <h3>Your data is yours</h3>
+        <p>Use the <strong>Clear all</strong> button in the popup to delete every byte of data PriceTrail has stored. Use <strong>Export</strong> to download a copy of your local data. Use <strong>Import</strong> to restore it on another computer.</p>
+
+        <h3>Changes to this policy</h3>
+        <p>If this policy ever changes, the new version will be published at this URL with an updated date.</p>
+
+        <h3>Contact</h3>
+        <p>Questions about this policy: open an issue on the <a href="#" style="color: var(--coral); font-weight: 700;">GitHub repository</a>.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <p>PriceTrail is free and open. Made with care, no AI dark patterns. © 2026.</p>
+  </footer>
+</body>
+</html>
